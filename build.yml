@@ -1,0 +1,35 @@
+name: Build NOVA OS
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get the files
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-multilib grub-pc-bin xorriso mtools
+
+      - name: Build kernel and bootable ISO
+        run: |
+          mkdir -p build/iso/boot/grub
+          gcc -m32 -c boot.s -o build/boot.o
+          gcc -m32 -ffreestanding -fno-pie -fno-stack-protector -fno-asynchronous-unwind-tables -c kernel.c -o build/kernel.o
+          ld -m elf_i386 -T linker.ld -o build/kernel.elf build/boot.o build/kernel.o
+          grub-file --is-x86-multiboot build/kernel.elf
+          cp build/kernel.elf build/iso/boot/kernel.elf
+          cp grub.cfg build/iso/boot/grub/grub.cfg
+          grub-mkrescue -o build/nova-os.iso build/iso
+
+      - name: Save the ISO for download
+        uses: actions/upload-artifact@v4
+        with:
+          name: nova-os-iso
+          path: build/nova-os.iso
+          if-no-files-found: error
