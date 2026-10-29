@@ -23,7 +23,7 @@ jobs:
 
       - name: Compile bootloader
         run: |
-          gcc -m32 -c BOOT.S -o build/boot.o
+         gcc -m32 -c boot.s -o build/boot.o
 
       - name: Compile kernel
         run: |
