@@ -40,6 +40,11 @@ jobs:
         run: |
           grub-mkrescue -o build/nova-os.iso build
 
+       - name: Check ISO
+        run: |
+          ls -lh build/nova-os.iso
+          file build/nova-os.iso
+
       - name: Check bootloader
         run: |
           grub-file --is-x86-multiboot build/boot/kernel.elf
