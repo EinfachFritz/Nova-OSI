@@ -31,8 +31,7 @@ jobs:
 
       - name: Link kernel
         run: |
-          ld -m elf_i386 -T linker.ld -o build/boot/kernel.elf build/boot.o build/kernel.o
-
+         ld -m elf_i386 -z max-page-size=0x1000 -T linker.ld -o build/boot/kernel.elf build/boot.o build/kernel.o
       - name: Add GRUB configuration
         run: |
           cp grub.cfg build/boot/grub/grub.cfg
