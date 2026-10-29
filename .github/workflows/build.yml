@@ -1,0 +1,52 @@
+
+name: Build NOVA OS
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download project
+        uses: actions/checkout@v4
+
+      - name: Install tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-multilib grub-pc-bin xorriso mtools
+
+      - name: Prepare folders
+        run: |
+          mkdir -p build/boot/grub
+
+      - name: Compile bootloader
+        run: |
+          gcc -m32 -c BOOT.S -o build/boot.o
+
+      - name: Compile kernel
+        run: |
+          gcc -m32 -ffreestanding -fno-pie -fno-stack-protector -c KERNEL.C -o build/kernel.o
+
+      - name: Link kernel
+        run: |
+          ld -m elf_i386 -T linker.ld -o build/boot/kernel.elf build/boot.o build/kernel.o
+
+      - name: Add GRUB configuration
+        run: |
+          cp grub.cfg build/boot/grub/grub.cfg
+
+      - name: Create ISO
+        run: |
+          grub-mkrescue -o build/nova-os.iso build
+
+      - name: Check bootloader
+        run: |
+          grub-file --is-x86-multiboot build/boot/kernel.elf
+
+      - name: Save ISO
+        uses: actions/upload-artifact@v4
+        with:
+          name: nova-os
+          path: build/nova-os.iso
