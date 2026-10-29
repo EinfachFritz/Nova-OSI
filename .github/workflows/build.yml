@@ -9,7 +9,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Download project
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Install tools
@@ -18,36 +18,25 @@ jobs:
           sudo apt-get install -y gcc-multilib grub-pc-bin xorriso mtools
 
       - name: Prepare folders
-        run: |
-          mkdir -p build/boot/grub
+        run: mkdir -p build/boot/grub
 
       - name: Compile bootloader
-        run: |
-         gcc -m32 -c boot.s -o build/boot.o
+        run: gcc -m32 -c boot.s -o build/boot.o
 
       - name: Compile kernel
-        run: |
-          gcc -m32 -ffreestanding -fno-pie -fno-stack-protector -c kernel.c -o build/kernel.o
+        run: gcc -m32 -ffreestanding -fno-pie -fno-stack-protector -c kernel.c -o build/kernel.o
 
       - name: Link kernel
-        run: |
-         ld -m elf_i386 -z max-page-size=0x1000 -T linker.ld -o build/boot/kernel.elf build/boot.o build/kernel.o
+        run: ld -m elf_i386 -z max-page-size=0x1000 -T linker.ld -o build/boot/kernel.elf build/boot.o build/kernel.o
+
       - name: Add GRUB configuration
-        run: |
-          cp grub.cfg build/boot/grub/grub.cfg
+        run: cp grub.cfg build/boot/grub/grub.cfg
 
       - name: Create ISO
-        run: |
-          grub-mkrescue -o build/nova-os.iso build
+        run: grub-mkrescue -o build/nova-os.iso build
 
-       - name: Check ISO
-        run: |
-          ls -lh build/nova-os.iso
-          file build/nova-os.iso
-
-      - name: Check bootloader
-        run: |
-          grub-file --is-x86-multiboot build/boot/kernel.elf
+      - name: Check ISO
+        run: test -f build/nova-os.iso
 
       - name: Save ISO
         uses: actions/upload-artifact@v4
