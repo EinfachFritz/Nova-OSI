@@ -27,7 +27,7 @@ jobs:
 
       - name: Compile kernel
         run: |
-          gcc -m32 -ffreestanding -fno-pie -fno-stack-protector -c KERNEL.C -o build/kernel.o
+          gcc -m32 -ffreestanding -fno-pie -fno-stack-protector -c kernel.c -o build/kernel.o
 
       - name: Link kernel
         run: |
