@@ -1,32 +1,18 @@
 
-.set MAGIC, 0x1BADB002
-.set FLAGS, 3
-.set CHECKSUM, -(MAGIC + FLAGS)
 
-.section .multiboot
-.align 4
-.long MAGIC
-.long FLAGS
-.long CHECKSUM
+void kernel_main(void)
+{
+    volatile unsigned short *screen =
+        (volatile unsigned short *)0xB8000;
+    const char *message = "Hello from NOVA OS!";
+    unsigned int i = 0;
 
-.section .text
-.global _start
-.extern kernel_main
+    while (message[i] != '\0') {
+        screen[i] = (unsigned short)message[i] | 0x0F00;
+        i++;
+    }
 
-_start:
-    cli
-    mov $stack_top, %esp
-    call kernel_main
-
-stop:
-    hlt
-    jmp stop
-
-.section .bss
-.align 16
-stack_bottom:
-    .skip 16384
-stack_top:
-
-.section .note.GNU-stack,"",@progbits
-
+    for (;;) {
+        __asm__ volatile ("hlt");
+    }
+}
